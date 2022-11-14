@@ -149,6 +149,47 @@ class SawyerXYZEnv(SawyerMocapBase, metaclass=abc.ABCMeta):
         # very first observation)
         self._prev_obs = self._get_curr_obs_combined_no_goal()
 
+    def custom_get_env_state(self):
+        """
+        Get full state of the environemnt
+        Default implemention provided. Override if env has custom state
+        """
+        qp = self.sim.data.qpos.ravel().copy()
+        qv = self.sim.data.qvel.ravel().copy()
+        mocap_pos = self.sim.data.mocap_pos.copy() if self.sim.model.nmocap>0 else None
+        mocap_quat = self.sim.data.mocap_quat.copy() if self.sim.model.nmocap>0 else None
+        site_pos = self.sim.model.site_pos[:].copy() if self.sim.model.nsite>0 else None
+        body_pos = self.sim.model.body_pos[:].copy()
+        # env_timestep = self.env_timestep
+        return dict(qpos=qp,
+                    qvel=qv,
+                    mocap_pos=mocap_pos,
+                    mocap_quat=mocap_quat,
+                    site_pos=site_pos,
+                    site_quat=self.sim.model.site_quat[:].copy(),
+                    body_pos=body_pos,
+                    body_quat=self.sim.model.body_quat[:].copy(),
+                    # env_timestep=self.env_timestep
+                    target_pos=self._target_pos
+                    )
+
+    def custom_set_env_state(self, state_dict):
+        """
+        Set full state of the environemnt
+        Default implemention provided. Override if env has custom state
+        """
+        qp = state_dict['qpos']
+        qv = state_dict['qvel']
+        self.set_state(qp, qv)
+        self.sim.model.site_pos[:] = state_dict['site_pos']
+        self.sim.model.site_quat[:] = state_dict['site_quat']
+        self.sim.model.body_pos[:] = state_dict['body_pos']
+        self.sim.model.body_quat[:] = state_dict['body_quat']
+        self._target_pos = state_dict['target_pos']
+        self.sim.forward()
+        for site in self._target_site_config:
+            self._set_pos_site(*site)
+
     def _set_task_inner(self):
         # Doesn't absorb "extra" kwargs, to ensure nothing's missed.
         pass
