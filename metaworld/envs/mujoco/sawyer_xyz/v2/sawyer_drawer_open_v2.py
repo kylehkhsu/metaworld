@@ -32,8 +32,6 @@ class SawyerDrawerOpenEnvV2(SawyerXYZEnv):
         goal_low = self.hand_low
         goal_high = self.hand_high
 
-        
-
         self._random_reset_space = Box(
             np.array(obj_low),
             np.array(obj_high),
@@ -136,3 +134,14 @@ class SawyerDrawerOpenEnvV2(SawyerXYZEnv):
             reward_for_caging,
             reward_for_opening
         )
+
+
+class ModifiedSawyerDrawerOpenEnvV2(SawyerDrawerOpenEnvV2):
+    def __init__(self, model_name):
+        self._model_name = model_name
+        super().__init__()
+
+    @property
+    def model_name(self):
+        return full_v2_path_for(self._model_name)
+
