@@ -184,3 +184,12 @@ class SawyerNutAssemblyEnvV2(SawyerXYZEnv):
             reward_in_place,
             success,
         )
+
+class ModifiedSawyerNutAssemblyEnvV2(SawyerNutAssemblyEnvV2):
+    def __init__(self, model_name):
+        self._model_name = model_name
+        super().__init__()
+
+    @property
+    def model_name(self):
+        return full_v2_path_for(self._model_name)
